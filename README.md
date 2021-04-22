@@ -39,6 +39,9 @@ You are welcome to post any questions or issues on [GitHub](https://github.com/b
 5. Low overhead image capturing in a virtual line scan setup and display in notebook ( USB )
    [USB_linescan_performance_demo_opencv_notebook](notebooks/USB_linescan_performance_demo_opencv.ipynb)
 
+6. Exposure bracketing using the sequencer feature of ace devices ( USB)
+   [USB_HDR_exposure_sequencer](notebooks/USB_hdr_exposure_bracketing_using_sequencer.ipynb)
+
 
 # Development
 
