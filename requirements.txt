@@ -1,0 +1,9 @@
+pypylon
+jupyterlab
+notebook
+pandas
+numpy
+matplotlib
+opencv-python
+scikit-image
+ipywidgets
