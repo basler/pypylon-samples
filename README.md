@@ -43,7 +43,7 @@ You are welcome to post any questions or issues on [GitHub](https://github.com/b
    [USB_HDR_exposure_sequencer](notebooks/USB_hdr_exposure_bracketing_using_sequencer.ipynb)
 
 7. Exposure bracketing using the sequencer feature of ace2/boost-R devices ( USB)
-   [USB_HDR_exposure_sequencer](notebooks/Ace2_USB_hdr_exposure_bracketing_using_sequencer.ipynb)
+   [USB_Ace2_BoostR_HDR_exposure_sequencer](notebooks/Ace2_USB_hdr_exposure_bracketing_using_sequencer.ipynb)
 
 
 # Development
