@@ -11,7 +11,7 @@ You are welcome to post any questions or issues on [GitHub](https://github.com/b
 # Overview
 
  * Some of the content was part of the Basler webinar about pypylon. You can watch this to get more in depth information about pylon SDK and pypylon.
- Please check for the recording at [Basler PyPylon Webinar](https://www.baslerweb.com/en/company/news-press/webinar/pypylon-python-open-source-interface-emea/)
+ Please check for the recording at [Basler PyPylon Webinar](https://www.baslerweb.com/en/learning/pypylon/)
  * As the feature names of basler cameras differ slightly between e.g. Basler ace USB and Basler ace GEV, it is noted at the samples or notebooks for which camera family the sample applies.
  * The python requirements to run the jupyter notebooks and samples are listed in [requirements.txt](requirements.txt)
  
