@@ -4,9 +4,9 @@ import time
 from typing import Union, Optional, Generator
 
 import serial
-
 from pypylon import pylon as py
 from pypylon.pylon import InvalidArgumentException, RuntimeException
+
 
 def timeout_generator(timeout_s: Union[float, None],
                       min_interval_s: Union[float, None] = 0.1,
@@ -31,7 +31,7 @@ def timeout_generator(timeout_s: Union[float, None],
     while time.perf_counter() < end_time:
         if min_interval_s > 0:
             # force a minimum interval
-            time.sleep(max(min_interval_s - (last_call - time.perf_counter()), 0))
+            time.sleep(max(min_interval_s - (time.perf_counter() - last_call), 0))
         last_call = time.perf_counter()
         yield True
     if raise_error:
@@ -51,6 +51,7 @@ class BaslerSerial(serial.SerialBase):
     on a Basler camera, providing methods to send and receive data over the serial interface,
     configure the camera's serial settings (such as baud rate, data bits, parity, stop bits),
     and monitor the status of the camera"""
+
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-positional-arguments
     def __init__(self,
@@ -97,6 +98,20 @@ class BaslerSerial(serial.SerialBase):
         if not self.camera.IsOpen():
             self.camera.Open()
         self._is_open = True
+
+    @property
+    def is_open(self) -> bool:
+        """Indicates whether the serial interface is considered open."""
+        return self._is_open
+
+    def __enter__(self):
+        """Enter context: ensure camera is open."""
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit context: flush serial."""
+        self.flush()
 
     def close(self, close_camera=False):
         """Since normally the camera remains open throughout its lifecycle, this method does not perform
@@ -300,7 +315,7 @@ class BaslerSerial(serial.SerialBase):
         max_single_slice = self.camera.BslSerialTransferLength.Max
 
         data_to_send = bytearray(data)
-        slices = data_len // max_single_slice + 1
+        slices = (data_len + max_single_slice - 1) // max_single_slice
 
         # it's not possible to buffer the data,
         # if there is more then one slice, force waiting!
@@ -313,14 +328,23 @@ class BaslerSerial(serial.SerialBase):
                                            block=block)
         return send_count
 
-    def _slice_input_buffer(self, end_pos: Optional[int] = None):
+    def _consume_n_bytes(self, n: Optional[int] = None) -> bytes:
+        """Consume exactly n bytes from the input buffer (or less if not available)."""
+        if n is None:
+            n = len(self._input_buffer)
+        result = self._input_buffer[:n]
+        self._input_buffer = self._input_buffer[n:]
+        return result
 
-        if end_pos is None:
-            end_pos = len(self._input_buffer)
 
-        _slice = self._input_buffer[:end_pos + 1]
-        self._input_buffer = self._input_buffer[end_pos + 1:]
-        return _slice
+    def _consume_up_to_index(self, index: Optional[int] = None) -> bytes:
+        """Consume bytes from the buffer up to and including the given index."""
+        if index is None:
+            index = len(self._input_buffer) - 1
+        result = self._input_buffer[:index + 1]
+        self._input_buffer = self._input_buffer[index + 1:]
+        return result
+
 
     def read(self, size: int = 1):
         """Reads a specific number of bytes from the camera's RX-Buffer.
@@ -335,8 +359,9 @@ class BaslerSerial(serial.SerialBase):
             if len(self._input_buffer) < size:
                 self.receive()
                 continue
-            return self._slice_input_buffer(size)
-        return self._slice_input_buffer()
+            return self._consume_n_bytes(size)
+        return self._consume_n_bytes()
+
 
     def read_until(self, expected: bytes = b'\n', size=None):
         """Reads from the RX-Buffer until a specific byte sequence is encountered,
@@ -356,15 +381,17 @@ class BaslerSerial(serial.SerialBase):
                 self.receive()
                 continue
             if end_index >= 0:
-                return self._slice_input_buffer(end_index)
-            return self._slice_input_buffer(size)
-        return self._slice_input_buffer()
+                return self._consume_up_to_index(end_index)
+            return self._consume_n_bytes(size)
+        return self._consume_n_bytes()
+
 
     def reset_input_buffer(self):
         """Resets the input buffer on host and on camera"""
         self._input_buffer = bytearray()
         while self.camera.BslSerialTransferLength.Value:
             self.camera.BslSerialReceive.Execute()
+
 
     def reset_output_buffer(self):
         """Flush the output buffer on camera
