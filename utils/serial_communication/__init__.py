@@ -1,6 +1,6 @@
 """Basler Serial Communication"""
 import serial
-from serial_communication import BaslerSerial
+from .serial_communication import BaslerSerial
 
 def basler_cam_uart(camera, *args, **kwargs):
     return BaslerSerial(camera, *args, **kwargs)

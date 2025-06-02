@@ -7,6 +7,13 @@ import serial
 from pypylon import pylon as py
 from pypylon.pylon import InvalidArgumentException, RuntimeException
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 def timeout_generator(timeout_s: Union[float, None],
                       min_interval_s: Union[float, None] = 0.1,
@@ -56,39 +63,51 @@ class BaslerSerial(serial.SerialBase):
     # pylint: disable=too-many-positional-arguments
     def __init__(self,
                  camera: py.InstantCamera,
-                 *args,
-                 **kwargs):
+                 rx_line: str = "Line2",
+                 tx_line: str = "Line3",
+                 baudrate: int = 115200,
+                 bytesize: int = 8,
+                 parity: str = "None",
+                 stop_bits: int = 1,
+                 timeout: float = 1.0,
+                 timeout_interval: float = 0.1,
+                 *args):
 
         """Initializes the BaslerSerial instance and configures the camera settings.
 
         :param camera: The Basler camera that will be used for communication.
         :param rx_line: The reception line to use (default "Line2").
         :param tx_line: The transmit line to use (default "Line3").
-        :param baud_rate: The baud rate for communication (default 115200).
-        :param data_bits: The number of data bits for (default 8).
+        :param baudrate: The baud rate for communication (default 115200).
+        :param bytesize: The number of data bits for (default 8).
         :param parity: The parity setting for communication (default "None").
         :param stop_bits: The number of stop bits for (default 1).
         :param timeout: The timeout duration in seconds for operations (default 1.0).
         :param timeout_interval: The interval in seconds between retries during timeout (default 0.1).
         """
 
-        super().__init__(*args, **kwargs)
         self.camera = camera
-        if self.camera.IsOpen() is False:
-            self.camera.Open()
-        self._rx_source = kwargs.get("rx_line", "Line2")
-        self._tx_sink = kwargs.get("tx_line", "Line3")
-        self._baud_rate = kwargs.get("baud_rate", 115200)
-        self._data_bits = kwargs.get("data_bits", 8)
-        self._parity = kwargs.get("parity", "None")
-        self._stop_bits = kwargs.get("stop_bits", 1)
-        self._timeout = kwargs.get("timeout", 1.0)
-        self._timeout_interval = kwargs.get("timeout_interval", 0.1)
-        self._input_buffer = bytearray()
+        self._rx_source = rx_line
+        self._tx_sink = tx_line
 
-        self.configure_line(self._rx_source, self._tx_sink)
-        self.configure_frame(self._baud_rate, self._data_bits, self._parity, self._stop_bits)
-        self._is_open = True
+        port = f"Basler_{camera.GetDeviceInfo().GetSerialNumber()}"
+
+
+        super().__init__(port=port,
+                         baudrate=baudrate,
+                         bytesize=bytesize,
+                         parity=parity,
+                         stopbits=stop_bits,
+                         timeout=timeout,
+                         *args)
+
+        self._timeout = timeout  #
+        self._timeout_interval = timeout_interval
+        self._input_buffer = bytearray()
+        self.open()
+        # reset buffers inside the camera on initialization
+        self.reset_input_buffer()
+        self.reset_output_buffer()
 
     def open(self):
         """Open the Camera
@@ -97,12 +116,10 @@ class BaslerSerial(serial.SerialBase):
         to verify that the camera is open to avoid any unexpected behavior."""
         if not self.camera.IsOpen():
             self.camera.Open()
-        self._is_open = True
-
-    @property
-    def is_open(self) -> bool:
-        """Indicates whether the serial interface is considered open."""
-        return self._is_open
+            logger.debug(f"Camera opened: {self.camera.GetDeviceInfo().GetSerialNumber()}")
+        if not self.is_open:
+            self._reconfigure_port()
+            self.is_open = True
 
     def __enter__(self):
         """Enter context: ensure camera is open."""
@@ -125,8 +142,14 @@ class BaslerSerial(serial.SerialBase):
     def flush(self):
         """Block until TX-Buffer is empty"""
         for _ in timeout_generator(self._timeout, self._timeout_interval, raise_error=True):
-            if self.camera.BslSerialTxFifoEmpty:
+            if self.camera.BslSerialTxFifoEmpty.Value:
                 break
+
+    def _reconfigure_port(self):
+        """Reconfigure the port settings based on the current configuration."""
+        logger.debug("Reconfiguring port")
+        self.configure_line(self._rx_source, self._tx_sink, touch_rx_line=False)
+        self.configure_frame(self._baudrate, self._bytesize, self._parity, self._stopbits)
 
     def configure_line(self, rx_source: str, tx_sink: str, touch_rx_line: bool = True):
         """Camera setup for the uart hardware lines.
@@ -158,6 +181,7 @@ class BaslerSerial(serial.SerialBase):
 
         self._rx_source = rx_source
         self._tx_sink = tx_sink
+        logger.debug(f"Configured RX Source: {rx_source}, TX Sink: {tx_sink}")
 
     def configure_frame(self, baud_rate: int, data_bits: int, parity: str, stop_bits: int):
         """Set up the timing of the camera UART feature.
@@ -173,6 +197,12 @@ class BaslerSerial(serial.SerialBase):
         parity_node = self.camera.BslSerialParity
         stop_bit_node = self.camera.BslSerialNumberOfStopBits
 
+        # convert from serial to camera settings
+        if parity in serial.PARITY_NAMES:
+            parity = serial.PARITY_NAMES[parity]
+        if parity.upper() not in ["ODD", "EVEN", "NONE"]:
+            raise ValueError(f"The Camera Serial only supports: 'Odd', 'Even', or 'None' parity, is {parity}.")
+
         try:
             baud_rate_node.Value = f"Baud{baud_rate}"
             data_bit_node.Value = f"Bits{data_bits}"
@@ -181,15 +211,20 @@ class BaslerSerial(serial.SerialBase):
         except InvalidArgumentException as in_arg_ex:
             raise AssertionError("Configuration is not possible, Invalid Argument:" + str(in_arg_ex)) from in_arg_ex
 
-        self._baud_rate = baud_rate
-        self._data_bits = data_bits
-        self._parity = parity
-        self._stop_bits = stop_bits
+        self._baudrate = baud_rate
+        self._bytesize = data_bits
 
+        # store the parity in the serial.SerialBase format
+        self._parity = {v: k for k, v in serial.PARITY_NAMES.items()}[parity]
+        self._stopbits = stop_bits
+        logger.debug(f"Configured Serial Frame: Baudrate: {baud_rate}, Data Bits: {data_bits}, Parity: {parity}, Stop Bits: {stop_bits}")
+
+    @property
     def out_waiting(self) -> int:
         """Return 1 if there are bytes left to be sent, exact number is unknown"""
-        return 1 if self.camera.BslSerialTxFifoEmpty else 0
+        return 1 if self.camera.BslSerialTxFifoEmpty.Value else 0
 
+    @property
     def in_waiting(self) -> int:
         """Performing a read, add it to the internal buffer and return the count of waiting bytes"""
         self.receive()
@@ -201,6 +236,7 @@ class BaslerSerial(serial.SerialBase):
 
         :return: None
         """
+        logger.debug("Camera Serial Reset started")
         self._input_buffer = bytearray()
 
         self.camera.BslSerialTxBreak.Value = False
@@ -226,6 +262,7 @@ class BaslerSerial(serial.SerialBase):
         self.camera.BslSerialTransmit.Execute()
         if self.camera.BslSerialTxFifoOverflow.Value:
             raise AssertionError("BslSerialTxFifoOverflow is not reset")
+        logger.debug("Camera Serial Reset done")
 
     def check_status(self, assert_ok=True) -> list:
         """Check the camera uart status register.
@@ -249,6 +286,7 @@ class BaslerSerial(serial.SerialBase):
         if self.camera.BslSerialRxBreak.Value:
             error_list.append("BREAK_ON_RX")
 
+        logger.debug(f"Camera Serial Status checked: {error_list}")
         # pylint: disable=C1801
         if assert_ok and len(error_list) != 0:
             raise AssertionError(f"Serial Error detected: {error_list}")
@@ -319,7 +357,8 @@ class BaslerSerial(serial.SerialBase):
 
         # it's not possible to buffer the data,
         # if there is more then one slice, force waiting!
-        if slices > 1:
+        if slices > 1 and not block:
+            logger.warning(f"Forced blocking during write, due to camera tx-buffer limit of {max_single_slice} bytes!")
             block = True
 
         send_count = 0
@@ -328,7 +367,7 @@ class BaslerSerial(serial.SerialBase):
                                            block=block)
         return send_count
 
-    def _consume_n_bytes(self, n: Optional[int] = None) -> bytes:
+    def _consume_n_bytes(self, n: Optional[int] = None) -> bytearray:
         """Consume exactly n bytes from the input buffer (or less if not available)."""
         if n is None:
             n = len(self._input_buffer)
@@ -336,17 +375,7 @@ class BaslerSerial(serial.SerialBase):
         self._input_buffer = self._input_buffer[n:]
         return result
 
-
-    def _consume_up_to_index(self, index: Optional[int] = None) -> bytes:
-        """Consume bytes from the buffer up to and including the given index."""
-        if index is None:
-            index = len(self._input_buffer) - 1
-        result = self._input_buffer[:index + 1]
-        self._input_buffer = self._input_buffer[index + 1:]
-        return result
-
-
-    def read(self, size: int = 1):
+    def read(self, size: int = 1) -> bytes:
         """Reads a specific number of bytes from the camera's RX-Buffer.
 
         This method reads from the internal buffer, waiting for new data if necessary.
@@ -359,39 +388,17 @@ class BaslerSerial(serial.SerialBase):
             if len(self._input_buffer) < size:
                 self.receive()
                 continue
-            return self._consume_n_bytes(size)
-        return self._consume_n_bytes()
-
-
-    def read_until(self, expected: bytes = b'\n', size=None):
-        """Reads from the RX-Buffer until a specific byte sequence is encountered,
-        or the size limit or timeout is reached.
-
-        This method is commonly used to read until a newline (`\n`) is found, but other sequences can be specified.
-
-        :param expected: The byte sequence to stop reading upon finding (default is '\n').
-        :param size: The maximum number of bytes to read (optional).
-        :return: The data read up to the expected sequence or size limit, may fewer on timeout.
-        """
-
-        for _ in timeout_generator(self._timeout):  # no interval here, reading is critical in time
-            end_index = self._input_buffer.find(expected)
-
-            if end_index == -1 and len(self._input_buffer) < (size or 1e6):
-                self.receive()
-                continue
-            if end_index >= 0:
-                return self._consume_up_to_index(end_index)
-            return self._consume_n_bytes(size)
-        return self._consume_n_bytes()
+            return bytes(self._consume_n_bytes(size))
+        return bytes(self._consume_n_bytes())
 
 
     def reset_input_buffer(self):
         """Resets the input buffer on host and on camera"""
+
         self._input_buffer = bytearray()
         while self.camera.BslSerialTransferLength.Value:
             self.camera.BslSerialReceive.Execute()
-
+        logger.debug("Camera Serial Input Buffer reset done")
 
     def reset_output_buffer(self):
         """Flush the output buffer on camera
@@ -399,3 +406,7 @@ class BaslerSerial(serial.SerialBase):
         Since there is no buffer on host side, that is all
         """
         self.flush()
+
+    def update_break_state(self):
+        """Update the break state of the serial communication."""
+        self.camera.BslSerialTxBreak.Value = self.break_condition
