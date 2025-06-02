@@ -1,7 +1,48 @@
-# Ignore python stuff
-__pycache__
-*.pyc
+# Ignore Python cache and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore Jupyter notebook checkpoints
 .ipynb_checkpoints/
 
-# Ignore .idea folder
-/.idea/
+# Ignore virtual environments
+.venv/
+venv/
+ENV/
+env/
+*.env
+
+# Ignore editor/project-specific folders
+.idea/
+.vscode/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and dumps
+*.log
+*.bak
+
+# Ignore test outputs or coverage
+htmlcov/
+.tox/
+.coverage
+coverage.xml
+.cache/
+.pytest_cache/
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore secret or config files
+*.pem
+*.key
+*.crt
+*.cfg
+*.ini
+.env.local
+.env.*.local
