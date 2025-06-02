@@ -16,6 +16,10 @@ class SequencerTransition:
     trigger_source: str = "Off"
     trigger_activation: Literal["NA", "RisingEdge", "FallingEdge", "AnyEdge", "LevelHigh", "LevelLow"] = "NA"
 
+    def __repr__(self):
+        """String representation of the SequencerTransition"""
+        ta = "Event" if self.trigger_activation == "NA" else self.trigger_activation
+        return f"{ta} on {self.trigger_source}"
 
 @dataclass()
 class SinglePathSet:
@@ -28,14 +32,18 @@ class SinglePathSet:
     transition: SequencerTransition = SequencerTransition()
 
     def __post_init__(self):
+        """Post init to ensure the next_set_number is set if not given"""
         if self.next_set_number is None:
             self.next_set_number: int = self.set_number + 1
 
     def __repr__(self):
+        """String representation of the SinglePathSet"""
         if self.name == "":
-            return f"{self.set_number}({self.feature_set})->{self.next_set_number}"
+            description = f"[{self.set_number}] (Features: {self.feature_set})"
         else:
-            return f"{self.set_number}({self.name})->{self.next_set_number}"
+            description = f"[{self.set_number}] (Name: {self.name})"
+
+        return f"{description} switch to [{self.next_set_number}] if {self.transition}"
 
 
 class CameraSequence:
@@ -152,8 +160,16 @@ class CameraSequence:
         logging.debug(f"Sequencer configured with {len(self)} sequences")
 
     def activate(self):
+        """Activate the sequencer mode of the camera
+        Warning: This will block the access to all sequencable features!
+        """
         self._camera.SequencerMode.Value = "On"
+        logging.debug("Sequencer activated")
 
+    def deactivate(self):
+        """Deactivate the sequencer mode of the camera"""
+        self._camera.SequencerMode.Value = "Off"
+        logging.debug("Sequencer deactivated")
 
 if __name__ == '__main__':
     my_cam = py.InstantCamera(py.TlFactory.GetInstance().CreateFirstDevice())
@@ -182,10 +198,4 @@ if __name__ == '__main__':
     # This could also be done by setting the next set in the SetConstructor, like:
     # SinglePathSet(name="High",set_number=2,next_set_number=0,feature_set={"ExposureTime": 5000}, transition=next_frame_transition)
     sequence.configure(auto_close_loop=True)
-
-    # The sequence supports
-    print(len(sequence))
-    for i in sequence:
-        print(i)
-
     sequence.activate()
