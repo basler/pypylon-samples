@@ -1,9 +1,10 @@
+"""Sequencer Control Class for Basler Cameras Ace2/BoostR"""
+
 import logging
 from dataclasses import dataclass
-from typing import Literal, Dict, List
+from typing import Dict, List, Literal
 
 from pypylon import pylon as py
-
 
 logging.basicConfig(level=logging.INFO)
 
@@ -58,7 +59,7 @@ class CameraSequence:
         try:
             self._camera.SequencerMode.Value = "Off"
         except py.LogicalErrorException as error:
-            raise RuntimeError(f"The camera did not support sequencing!") from error
+            raise RuntimeError("The camera did not support sequencing!") from error
 
         self._sequence: List[SinglePathSet] = []
 
@@ -72,6 +73,7 @@ class CameraSequence:
         return iter(self._sequence)
 
     def append(self, seq_set: SinglePathSet):
+        """Append a new set to the sequence"""
         self._sequence.append(seq_set)
 
     def __delitem__(self, index):
@@ -196,6 +198,10 @@ if __name__ == '__main__':
 
     # By using auto close loop, we return into the "Medium" Set after leaving set: "High" automatically.
     # This could also be done by setting the next set in the SetConstructor, like:
-    # SinglePathSet(name="High",set_number=2,next_set_number=0,feature_set={"ExposureTime": 5000}, transition=next_frame_transition)
+    # SinglePathSet(name="High",
+    #               set_number=2,
+    #               next_set_number=0,
+    #               feature_set={"ExposureTime": 5000},
+    #               transition=next_frame_transition)
     sequence.configure(auto_close_loop=True)
     sequence.activate()
