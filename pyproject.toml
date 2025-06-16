@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=61.0", "build"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "pypylon-contrib"
+version = "0.1.0"
+description = "Contrib package for the Basler pylon Camera Software Suite 'pypylon'"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Thies Moeller", email = "thies.moeller@baslerweb.com"},
+    {name = "Sebastian Koell", email = "sebastian.koell@baslerweb.com"}
+]
+dependencies = [
+    "pypylon",
+    "numpy",
+    "opencv-python",
+    "pyserial",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pylint",
+    "pytest",
+]
+notebook = [
+    "jupyterlab",
+    "notebook",
+    "pandas",
+    "matplotlib",
+    "scikit-image",
+    "ipywidgets",
+]
+
+[tool.setuptools]
+packages = ["pypylon_contrib"]
+package-dir = {"" = "src"}
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+lint.select = ["E", "F", "B", "I"]
+lint.ignore = []
+
+
+[tool.pylint.messages_control]
+disable = [
+    "logging-fstring-interpolation"
+]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "ex", "Run", "_", "id"]
+
+[tool.pylint.similarities]
+min-similarity-lines = 4
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true 
