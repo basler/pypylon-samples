@@ -7,3 +7,4 @@ matplotlib
 opencv-python
 scikit-image
 ipywidgets
+pyserial
