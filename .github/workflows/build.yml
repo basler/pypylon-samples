@@ -1,4 +1,4 @@
-name: Build with setuptools_scm
+name: Build
 
 on:
   push:
@@ -29,5 +29,5 @@ jobs:
     - name: Upload wheel
       uses: actions/upload-artifact@v4
       with:
-        name: built-wheel
+        name: pypylon-contrib-wheel
         path: dist/*.whl
