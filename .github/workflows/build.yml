@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  # Trigger the workflow on pushes to main and on version tags in the format X.Y.Z.*
+  # and on pull requests to main
+  push:
+    branches: [main]
+    tags: ["[0-9]+.[0-9]+.[0-9]+*"]
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    if: |
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install build tools
+      run: pip install build setuptools-scm
+
+    - name: Build wheel
+      run: python -m build --wheel
+
+    - name: Upload wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: pypylon-contrib-wheel
+        path: dist/*.whl
