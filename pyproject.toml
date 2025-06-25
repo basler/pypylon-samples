@@ -1,11 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "build"]
+requires = ["setuptools>=61.0", "build", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
 name = "pypylon-contrib"
-version = "0.1.0"
 description = "Contrib package for the Basler pylon Camera Software Suite 'pypylon'"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,6 +13,10 @@ authors = [
     {name = "Thies Moeller", email = "thies.moeller@baslerweb.com"},
     {name = "Sebastian Koell", email = "sebastian.koell@baslerweb.com"}
 ]
+
+
+dynamic = ["version"]
+
 dependencies = [
     "pypylon",
     "numpy",
@@ -39,6 +42,11 @@ notebook = [
 [tool.setuptools]
 packages = ["pypylon_contrib"]
 package-dir = {"" = "src"}
+
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "node-and-date"
 
 [tool.ruff]
 line-length = 120
