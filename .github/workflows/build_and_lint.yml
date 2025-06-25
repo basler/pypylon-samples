@@ -1,4 +1,4 @@
-name: Build
+name: Build and Lint
 
 on:
   # Trigger the workflow on pushes to main and on version tags in the format X.Y.Z.*
@@ -39,3 +39,30 @@ jobs:
       with:
         name: pypylon-contrib-wheel
         path: dist/*.whl
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[dev]"
+
+      - name: Run pylint
+        run: |
+          pylint src --fail-under=10.0
+
+      - name: Run ruff
+        run: |
+          ruff check src --output-format=github
