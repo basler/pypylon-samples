@@ -15,7 +15,6 @@ env/
 
 # Ignore editor/project-specific folders
 .idea/
-.vscode/
 
 # Ignore system files
 .DS_Store
