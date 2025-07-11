@@ -40,9 +40,12 @@ notebook = [
 ]
 
 [tool.setuptools]
-packages = ["pypylon_contrib"]
 package-dir = {"" = "src"}
 
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pypylon.contrib*"]
+namespaces = true
 
 [tool.setuptools_scm]
 version_scheme = "guess-next-dev"

@@ -5,6 +5,7 @@ import time
 from typing import Generator, Optional, Union
 
 import serial
+
 from pypylon import pylon as py
 from pypylon.pylon import InvalidArgumentException, RuntimeException
 
