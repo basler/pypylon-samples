@@ -1,4 +1,4 @@
-name: Build and Lint
+name: Build and Test
 
 on:
   # Trigger the workflow on pushes to main and on version tags in the format X.Y.Z.*
@@ -40,7 +40,27 @@ jobs:
         name: pypylon-contrib-wheel
         path: dist/*.whl
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[dev]"
+
+      - name: Run tests
+        run: |
+          pytest tests
+
   lint:
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -66,3 +86,4 @@ jobs:
       - name: Run ruff
         run: |
           ruff check src --output-format=github
+
