@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "build", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "pypylon-contrib"
+description = "Contrib package for the Basler pylon Camera Software Suite 'pypylon'"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Thies Moeller", email = "thies.moeller@baslerweb.com"},
+    {name = "Sebastian Koell", email = "sebastian.koell@baslerweb.com"}
+]
+
+
+dynamic = ["version"]
+
+dependencies = [
+    "pypylon",
+    "numpy",
+    "opencv-python",
+    "pyserial",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pylint",
+    "pytest",
+]
+notebook = [
+    "jupyterlab",
+    "notebook",
+    "pandas",
+    "matplotlib",
+    "scikit-image",
+    "ipywidgets",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pypylon.contrib*"]
+namespaces = true
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "node-and-date"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+lint.select = ["E", "F", "B", "I"]
+lint.ignore = []
+
+#  Ignore `F401` (imported but unused) in all `__init__.py` files.
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+
+[tool.pylint.messages_control]
+disable = [
+    "logging-fstring-interpolation"
+]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.basic]
+good-names = ["i", "j", "k", "ex", "Run", "_", "id"]
+
+[tool.pylint.similarities]
+min-similarity-lines = 4
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true 

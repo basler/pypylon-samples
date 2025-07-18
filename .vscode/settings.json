@@ -1,0 +1,13 @@
+{
+    // Automatically remove trailing whitespace on save
+    "files.trimTrailingWhitespace": true,
+    // Automatically insert final newline at end of file
+    "files.insertFinalNewline": true,
+    // Automatically format on save
+    "editor.formatOnSave": true,
+    // Python formatting with ruff
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true
+    }
+}

@@ -1,13 +1,13 @@
 """Basler Serial Communication"""
 
+import logging
 import time
-from typing import Union, Optional, Generator
+from typing import Generator, Optional, Union
 
 import serial
+
 from pypylon import pylon as py
 from pypylon.pylon import InvalidArgumentException, RuntimeException
-
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,6 +62,7 @@ class BaslerSerial(serial.SerialBase):
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-positional-arguments
     def __init__(self,
+                 *args,
                  camera: py.InstantCamera,
                  rx_line: str = "Line2",
                  tx_line: str = "Line3",
@@ -71,7 +72,7 @@ class BaslerSerial(serial.SerialBase):
                  stop_bits: int = 1,
                  timeout: float = 1.0,
                  timeout_interval: float = 0.1,
-                 *args):
+                 ):
 
         """Initializes the BaslerSerial instance and configures the camera settings.
 
@@ -92,7 +93,7 @@ class BaslerSerial(serial.SerialBase):
 
         port = f"Basler_{camera.GetDeviceInfo().GetSerialNumber()}"
 
-
+        # ruff: noqa: B026
         super().__init__(port=port,
                          baudrate=baudrate,
                          bytesize=bytesize,
@@ -136,8 +137,7 @@ class BaslerSerial(serial.SerialBase):
         """
         if not (close_camera or self.camera.IsOpen()):
             return
-        else:
-            self.camera.Close()
+        self.camera.Close()
 
     def flush(self):
         """Block until TX-Buffer is empty"""
@@ -217,7 +217,8 @@ class BaslerSerial(serial.SerialBase):
         # store the parity in the serial.SerialBase format
         self._parity = {v: k for k, v in serial.PARITY_NAMES.items()}[parity]
         self._stopbits = stop_bits
-        logger.debug(f"Configured Serial Frame: Baudrate: {baud_rate}, Data Bits: {data_bits}, Parity: {parity}, Stop Bits: {stop_bits}")
+        logger.debug(f"Configured Serial Frame: Baudrate: {baud_rate}, Data Bits: {data_bits}, \
+                     Parity: {parity}, Stop Bits: {stop_bits}")
 
     @property
     def out_waiting(self) -> int:

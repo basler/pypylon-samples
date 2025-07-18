@@ -15,7 +15,6 @@ env/
 
 # Ignore editor/project-specific folders
 .idea/
-.vscode/
 
 # Ignore system files
 .DS_Store
@@ -43,6 +42,5 @@ dist/
 *.key
 *.crt
 *.cfg
-*.ini
 .env.local
 .env.*.local
