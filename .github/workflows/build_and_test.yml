@@ -5,7 +5,7 @@ on:
   # and on pull requests to main
   push:
     branches: [main]
-    tags: ["[0-9]+.[0-9]+.[0-9]+*"]
+    tags: ["*.*.*"]
   pull_request:
     branches: [ main ]
     types: [ opened, synchronize, reopened ]

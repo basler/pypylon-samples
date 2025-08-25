@@ -44,3 +44,4 @@ dist/
 *.cfg
 .env.local
 .env.*.local
+*.whl

@@ -77,4 +77,4 @@ good-names = ["i", "j", "k", "ex", "Run", "_", "id"]
 min-similarity-lines = 4
 ignore-comments = true
 ignore-docstrings = true
-ignore-imports = true 
+ignore-imports = true
