@@ -1,4 +1,4 @@
-![pypylon](docs/images/Pypylon_grey_RZ_400px.png "pypylon")
+![pypylon](https://github.com/basler/pypylon-samples/blob/a22ab135a34e815fdde3ef3431b868617de6f712/docs/images/Pypylon_grey_RZ_400px.png "pypylon")
 
 Sample applications and jupyter notebooks using the official python wrapper for the Basler pylon Camera Software Suite.
 
