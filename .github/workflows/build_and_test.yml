@@ -68,10 +68,10 @@ jobs:
         files: dist/*
 
     - name: Publish package to PyPI
-      if: needs.setup.outputs.is_release_build == 'true' && startsWith( matrix.p, 'manylinux' )
+      if: needs.setup.outputs.is_release_build == 'true'
       run: |
-        sudo pip3 install twine
-        python3 -m twine upload --non-interactive --skip-existing dist/*
+        pip install twine
+        python -m twine upload --non-interactive --skip-existing dist/*
 
   test:
     needs: setup
