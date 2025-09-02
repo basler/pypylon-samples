@@ -1,4 +1,4 @@
-Version 0.1.1rc1
+Version 0.1.1
     - Date 2025-09-15
     - Added CI and changelog, initial release on PyPI
     - Update README.md
