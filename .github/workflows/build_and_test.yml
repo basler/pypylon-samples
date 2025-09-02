@@ -10,8 +10,27 @@ on:
     branches: [ main ]
     types: [ opened, synchronize, reopened ]
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  TWINE_USERNAME: __token__
+  TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release_build: ${{ env.RELEASE_BUILD == '1' }}
+    steps:
+    - name: Check for release build
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        echo "Build release for $GITHUB_REF"
+        echo "RELEASE_BUILD=1" >> $GITHUB_ENV
+
   build:
+    needs: setup
     runs-on: ubuntu-latest
 
     if: |
@@ -40,7 +59,22 @@ jobs:
         name: pypylon-contrib-wheel
         path: dist/*.whl
 
+    - name: Upload Release Asset
+      if: needs.setup.outputs.is_release_build == 'true'
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: dist/*
+
+    - name: Publish package to PyPI
+      if: needs.setup.outputs.is_release_build == 'true' && startsWith( matrix.p, 'manylinux' )
+      run: |
+        sudo pip3 install twine
+        python3 -m twine upload --non-interactive --skip-existing dist/*
+
   test:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +94,7 @@ jobs:
           pytest tests
 
   lint:
-
+    needs: setup
     runs-on: ubuntu-latest
     strategy:
       matrix:
