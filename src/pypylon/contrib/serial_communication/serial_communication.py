@@ -5,9 +5,9 @@ import time
 from typing import Generator, Optional, Union
 
 import serial
+from pypylon.pylon import InvalidArgumentException, RuntimeException
 
 from pypylon import pylon as py
-from pypylon.pylon import InvalidArgumentException, RuntimeException
 
 logging.basicConfig(
     level=logging.INFO,
