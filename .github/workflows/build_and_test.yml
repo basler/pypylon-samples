@@ -38,12 +38,12 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: "3.11"
 
@@ -54,14 +54,14 @@ jobs:
       run: python -m build --wheel
 
     - name: Upload wheel
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: pypylon-contrib-wheel
         path: dist/*.whl
 
     - name: Upload Release Asset
       if: needs.setup.outputs.is_release_build == 'true'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -77,10 +77,10 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
@@ -101,10 +101,10 @@ jobs:
         python-version: [ "3.9", "3.10", "3.11", "3.12" ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
