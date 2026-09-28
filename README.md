@@ -1,24 +1,50 @@
-![pypylon](https://raw.githubusercontent.com/basler/pypylon-samples/a22ab135a34e815fdde3ef3431b868617de6f712/docs/images/Pypylon_grey_RZ_400px.png "pypylon")
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/pylon_basler_banner_dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/pylon_basler_banner.svg">
+  <img alt="Basler pypylon banner" src="https://raw.githubusercontent.com/basler/pypylon-samples/main/docs/images/pylon_basler_banner.svg">
+</picture>
 
-Sample applications and jupyter notebooks using the official python wrapper for the Basler pylon Camera Software Suite.
+<br>
 
-This is a companion repository to [pypylon](https://github.com/basler/pypylon)
+Sample applications, Jupyter notebooks and contrib utilities using [pypylon](https://github.com/basler/pypylon), the official Python language binding for the Basler pylon Software Suite.
 
-**Please Note:**
-This project is offered with no technical support by Basler AG.
-You are welcome to post any questions or issues on [GitHub](https://github.com/basler/pypylon-samples) or on [ImagingHub](https://www.imaginghub.com).
+This is a companion repository to pypylon. The examples cover camera configuration, image acquisition, triggering, sequencers and serial communication.
+
+[![Build Status](https://github.com/basler/pypylon-samples/actions/workflows/build_and_test.yml/badge.svg?branch=main)](https://github.com/basler/pypylon-samples/actions/workflows/build_and_test.yml)
+
+# Getting Started
+
+The pypylon Programmer's Guide is available in the [Basler Product Documentation](https://docs.baslerweb.com/pypylon-introduction) and on [GitHub](https://github.com/basler/pypylon/tree/master/docs/programmers_guide).
+
+1. Install [Python](https://www.python.org/) with pip. Installing the [pylon Software Suite](https://www.baslerweb.com/pylon) is also recommended; some camera interfaces require additional drivers. See the [pypylon installation instructions](https://github.com/basler/pypylon#installation) for platform and camera requirements.
+2. Clone this repository and install the notebook dependencies:
+
+   ```console
+   git clone https://github.com/basler/pypylon-samples.git
+   cd pypylon-samples
+   python -m pip install -r requirements.txt
+   ```
+
+3. For example, start JupyterLab and open a notebook from the overview below:
+
+   ```console
+   jupyter lab
+   ```
+
+For the contrib examples, also install [pypylon-contrib](#contrib-examples-pypylon-contrib-required).
+
+> **Note:** Camera features and names vary between models and interfaces. Check the requirements in each notebook before running it. Samples may not always reflect the latest pypylon API or coding style; refer to the [pypylon samples](https://github.com/basler/pypylon/tree/master/samples) and [changelog](https://github.com/basler/pypylon/blob/master/changelog.txt) for current guidance.
 
 # Overview
 
  * Some of the content was part of the Basler webinar about pypylon. You can watch this to get more in depth information about pylon SDK and pypylon.
  Please check for the recording at [Basler PyPylon Webinar](https://www.baslerweb.com/en/learning/pypylon/)
- * As the feature names of basler cameras differ slightly between e.g. Basler ace USB and Basler ace GEV, it is noted at the samples or notebooks for which camera family the sample applies.
- * The python requirements to run the jupyter notebooks and samples are listed in [requirements.txt](requirements.txt)
+ * The Python requirements to run the Jupyter notebooks and samples are listed in [requirements.txt](requirements.txt).
 
 
 ## Basic Examples (pypylon only)
 
-These examples use only the basic pypylon library and can be run without additional dependencies.
+These examples use pypylon directly and do not require pypylon-contrib. Notebook, visualization and image-processing dependencies are included in [requirements.txt](requirements.txt).
 
 ### Notebooks
 
@@ -49,8 +75,8 @@ These examples use only the basic pypylon library and can be run without additio
 ## Contrib Examples (pypylon-contrib required)
 
 These examples require the pypylon-contrib library which provides additional utilities and helper functions. Install it using:
-```bash
-pip install pypylon-contrib
+```console
+python -m pip install pypylon-contrib
 ```
 
 ### Notebooks
@@ -58,7 +84,7 @@ pip install pypylon-contrib
 1. **Sequencer utilities** - Simplified interface for camera sequencer configuration
    [sequencer](notebooks/contrib-examples/sequencer.ipynb)
 
-   Demonstrates how to use the SequencerUtils from pypylon-contrib to easily configure camera sequences with the CameraSequence, SinglePathSet, and SequencerTransition classes.
+   Demonstrates how to configure camera sequences using the `CameraSequence`, `SinglePathSet`, and `SequencerTransition` classes from pypylon-contrib.
 
 2. **Serial communication** - Communication with serial devices connected to Basler cameras
    [serial_communication](notebooks/contrib-examples/serial_communication.ipynb)
@@ -71,5 +97,23 @@ pip install pypylon-contrib
 Pull requests to pypylon-samples are very welcome.
 e.g. generic samples that demonstrate interaction with GUI toolkits, as we typically only use Qt.
 
+To work on the contrib utilities, install the local package with development and notebook dependencies:
+
+```console
+python -m pip install -e ".[dev,notebook]"
+```
+
+Run the unit tests with:
+
+```console
+python -m pytest tests
+```
+
 # Known Issues
  * info table missing that clearly identifies which samples work for which camera model
+
+# Support
+
+> **Note:** This project is offered with no technical support by Basler AG.
+
+You are welcome to post questions or report issues on [GitHub](https://github.com/basler/pypylon-samples/issues).
