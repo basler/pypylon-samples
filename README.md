@@ -6,7 +6,7 @@
 
 <br>
 
-Sample applications, Jupyter notebooks, and contrib utilities using [pypylon](https://github.com/basler/pypylon), the official Python language binding for the Basler pylon Software Suite.
+Sample applications, Jupyter notebooks, and contrib utilities using [pypylon](https://github.com/basler/pypylon), the official Python language binding for the [Basler pylon C++ APIs](https://docs.baslerweb.com/pylonapi/cpp).
 
 This is a companion repository to pypylon. The examples cover camera configuration, image acquisition, triggering, sequencers, and serial communication.
 
@@ -114,6 +114,6 @@ python -m pytest tests
 
 # Support
 
-> **Note:** This project is offered with no technical support by Basler AG.
-
-You are welcome to post questions or report issues on [GitHub](https://github.com/basler/pypylon-samples/issues).
+You are welcome to post any questions or issues on GitHub. For questions or issues related to these samples or the contrib utilities, 
+please use [pypylon-samples issues](https://github.com/basler/pypylon-samples/issues). For issues with pypylon itself, please use [pypylon issues](https://github.com/basler/pypylon/issues).
+For additional technical support for business customers, please reach out to our official [Support](https://www.baslerweb.com/en/support/contact) team.
