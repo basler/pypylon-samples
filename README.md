@@ -6,9 +6,9 @@
 
 <br>
 
-Sample applications, Jupyter notebooks and contrib utilities using [pypylon](https://github.com/basler/pypylon), the official Python language binding for the Basler pylon Software Suite.
+Sample applications, Jupyter notebooks, and contrib utilities using [pypylon](https://github.com/basler/pypylon), the official Python language binding for the Basler pylon Software Suite.
 
-This is a companion repository to pypylon. The examples cover camera configuration, image acquisition, triggering, sequencers and serial communication.
+This is a companion repository to pypylon. The examples cover camera configuration, image acquisition, triggering, sequencers, and serial communication.
 
 [![Build Status](https://github.com/basler/pypylon-samples/actions/workflows/build_and_test.yml/badge.svg?branch=main)](https://github.com/basler/pypylon-samples/actions/workflows/build_and_test.yml)
 
@@ -44,7 +44,7 @@ For the contrib examples, also install [pypylon-contrib](#contrib-examples-pypyl
 
 ## Basic Examples (pypylon only)
 
-These examples use pypylon directly and do not require pypylon-contrib. Notebook, visualization and image-processing dependencies are included in [requirements.txt](requirements.txt).
+These examples use pypylon directly and do not require pypylon-contrib. Notebook, visualization, and image-processing dependencies are included in [requirements.txt](requirements.txt).
 
 ### Notebooks
 
