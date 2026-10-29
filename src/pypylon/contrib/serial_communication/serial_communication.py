@@ -91,7 +91,7 @@ class BaslerSerial(serial.SerialBase):
         self._rx_source = rx_line
         self._tx_sink = tx_line
 
-        port = f"Basler_{camera.GetDeviceInfo().GetSerialNumber()}"
+        port = f"Basler_{camera.DeviceInfo.SerialNumber}"
 
         # ruff: noqa: B026
         super().__init__(port=port,
@@ -117,7 +117,7 @@ class BaslerSerial(serial.SerialBase):
         to verify that the camera is open to avoid any unexpected behavior."""
         if not self.camera.IsOpen():
             self.camera.Open()
-            logger.debug(f"Camera opened: {self.camera.GetDeviceInfo().GetSerialNumber()}")
+            logger.debug(f"Camera opened: {self.camera.DeviceInfo.SerialNumber}")
         if not self.is_open:
             self._reconfigure_port()
             self.is_open = True
@@ -159,18 +159,18 @@ class BaslerSerial(serial.SerialBase):
         :param touch_rx_line: change the line settings to input and not inverted, if true
         :return: None
         """
-        available_sources = self.camera.BslSerialRxSource.Symbolics
+        available_sources = self.camera.BslSerialRxSource.GetSettableValues()
         if rx_source in available_sources:
             self.camera.BslSerialRxSource.Value = rx_source
         else:
             raise ValueError(f"RX Source not supported: {rx_source}")
 
-        if rx_source in self.camera.LineSelector.Symbolics and touch_rx_line:
+        if rx_source in self.camera.LineSelector.GetSettableValues() and touch_rx_line:
             self.camera.LineSelector.Value = rx_source
             self.camera.LineMode.Value = "Input"
             self.camera.LineInverter.Value = False
 
-        if tx_sink in self.camera.LineSelector.Symbolics:
+        if tx_sink in self.camera.LineSelector.GetSettableValues():
             self.camera.LineSelector.Value = tx_sink
             try:
                 self.camera.LineMode.Value = "Output"

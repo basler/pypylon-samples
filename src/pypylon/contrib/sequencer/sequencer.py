@@ -174,7 +174,7 @@ class CameraSequence:
         logging.debug("Sequencer deactivated")
 
 if __name__ == '__main__':
-    my_cam = py.InstantCamera(py.TlFactory.GetInstance().CreateFirstDevice())
+    my_cam = py.InstantCamera(py.FirstFound)
     my_cam.Open()
 
     # Example how to configure 3 Exposure Times, i.E. for HDR with the helper class
